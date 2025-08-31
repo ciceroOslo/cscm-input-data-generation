@@ -52,8 +52,8 @@ for s in scenario_list:
         full_data_dict[s][c] = []
         data_from_rcp[s][c] = []
 
-print components
-print units
+print(components)
+print(units)
 
 #sys.exit(4)    
 counter = 0

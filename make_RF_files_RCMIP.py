@@ -71,7 +71,7 @@ with open('rcmip-radiative-forcing-annual-means-v3-1-0.csv', 'rt') as csv_ssp_fi
             full_data_dict[s][c] = data
  
         else:
-            full_data_dict[s][c] = full_data_dict[s][c] + conv_factor*data    
+            full_data_dict[s][c] = full_data_dict[s][c] + data    
         
         #print "Success " + (',').join(line)
 #print counter
