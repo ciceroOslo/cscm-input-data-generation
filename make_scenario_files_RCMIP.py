@@ -2,44 +2,9 @@ import csv
 import sys
 import numpy as np
 
-from interpolation_of_input import interpolate_data
-from interpolation_of_input import interpolate_data_wconstant_start
-
-
-# Method to convert the unit names from tonnes to grams
-def unit_name_converter(unit):
-    u = unit[0:2]
-    if(u == 'Mt'):
-        return "Tg"
-    elif(u == 'kt'):
-        return "Gg"
-    elif(u == 'Gt'):
-        return "Pg"
-    else:
-        print("%s not supported for conversion"%unit)
-        sys.exit(4)
-        return unit
-
-#Method to find unit conversion factor
-def unit_conv_factor(proper_unit, unit,c):
-    conv_dict = {"P": 1.e15, "T": 1.e12, "G": 1.e9, "M": 1.e6, "k": 1.e3}
-    conv_factor = conv_dict[unit[0]]/conv_dict[proper_unit[0]]
-    if(unit[1:] != proper_unit[1:]):
-        if(unit[1:] == 'g' and proper_unit[1:] == "g_C" and (c == 'CO2' or c == 'CO2_lu')):
-            conv_factor = conv_factor*3./11 #Carbon mass fraction in CO2
-        elif(unit[1:]=='g' and proper_unit[1:] == 'g_N' and c == 'N2O'):
-            conv_factor = conv_factor*0.636 #Nitrogen mass fraction in N2O
-        elif(unit[1: ]=='t NOx/yr' and proper_unit[1:]== 't_N' and c == 'NOx'):
-            conv_factor = conv_factor*0.304 # Nitrogen mass fraction in NOx (approximated by NO2)
-        elif(unit[1:]=='g' and proper_unit[1:] == 'g_S' and c == 'SO2'):
-            conv_factor = conv_factor*0.501 #Sulphur mass fraction in SO2
-        else:
-            print("Unit: %s proper unit: %s for %s"%(unit, proper_unit, c))
-            print("%s %s %s "%(unit[1:],proper_unit[1:], c))
-            sys.exit(4)
-    #print "Converting from %s to %s  with conversion factor %e"%(unit, proper_unit, conv_factor)
-    return conv_factor
-
+from .interpolation_of_input import interpolate_data
+from .interpolation_of_input import interpolate_data_wconstant_start
+from .misc_utils import unit_conv_factor, unit_name_converter
 
 
 if __name__ == "__main__":
