@@ -8,7 +8,8 @@ SPECIAL_COMPONENTS_DICT = {
     "VOC":"NMVOC",
     "MAGICC Fossil and Industrial":"CO2",
     "Energy and Industrial Processes":"CO2",
-    "AFOLU":"CO2_lu"
+    "AFOLU":"CO2_lu",
+    "Albedo Change": "land_use",
 }
 
 # Method to convert the unit names from tonnes to grams
@@ -77,3 +78,20 @@ def component_renaming(comp_rcmip):
         return "HFC4310mee"
     #print(f"Don't know what to do with {comp_rcmip}, returning as is")
     return comp_rcmip
+
+def rf_component_renaming(rf_comp):
+    if rf_comp in SPECIAL_COMPONENTS_DICT:
+        return SPECIAL_COMPONENTS_DICT[rf_comp]
+    return rf_comp.lower()        
+
+def initialise_empty_dictionaries(scenario_dict, components):
+    ## Initialising dictionary to hold the data:
+    full_data_dict = {}
+
+    for s in scenario_dict:
+
+        full_data_dict[s] = {}
+        for c in components:
+            full_data_dict[s][c] = []
+
+    return full_data_dict

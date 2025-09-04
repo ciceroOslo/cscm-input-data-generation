@@ -63,7 +63,7 @@ def initialise_comp_unit_dict(gaspam_file):
     print(units)
     return components, units
 
-def initialise_empty_dictionaries(scenario_list, components):
+def initialise_empty_dictionaries_wrcp(scenario_list, components):
     ## Initialising dictionary to hold the data:
     # TODO: Get rid of RCMIP part
     full_data_dict = {}
@@ -121,7 +121,7 @@ def initialise_empty_dictionaries(scenario_list, components):
 def read_line_by_line(components, units, scenario_list, iamc_data_file):
     counter = 0
     readfirstline = 0
-    full_data_dict, data_from_rcp, rcp_BC_data, rcp_OC_data  = initialise_empty_dictionaries(scenario_list, components)
+    full_data_dict, data_from_rcp, rcp_BC_data, rcp_OC_data  = initialise_empty_dictionaries_wrcp(scenario_list, components)
 
     with open(iamc_data_file, 'r') as csv_ssp_file:
     #with open('rcmip-emissions-annual-means-ssp370-lowNTCF-only-20191218T1423.csv', 'r') as csv_ssp_file:

@@ -2,6 +2,7 @@ import csv
 import sys, shutil
 import numpy as np
 
+from misc_utils import initialise_empty_dictionaries
 
 ##Initialising list of scenarios components and units
 #
@@ -10,8 +11,8 @@ import numpy as np
 scenario_list = ["historical-cmip6", "ssp370", "ssp370-lowNTCF", "ssp434", "ssp460", "ssp119", "ssp126", "ssp245", "ssp534-over", "ssp585", "rcp60", "rcp85", "rcp45", "rcp26","constant_zero"]
 #scenario_list = ["ssp370-lowNTCF-aerchemmip", "ssp370-lowNTCF-gidden", "constant_zero"]
 #scenario_list = ["historical", "constant_zero"]
-#components = ["Solar", "Volcanic", "Albedo Change"]
-components = ["Albedo Change"]
+components = ["Solar", "Volcanic", "Albedo Change"]
+#components = ["Albedo Change"]
 ssp_rcp_dict = {"rcp60":"rcp_6.0.txt","rcp85":"rcp_8.5.txt","rcp45":"rcp_4.5.txt"}#"esm-pi-CO2pulse":"rcp_6.0.txt", "esm-pi-cdr-pulse":"rcp_6.0.txt","esm-piControl":"rcp_4.5.txt", "historical-cmip5":"rcp_6.0.txt"}
 #NBNB!! Check mappings for last four
 comp_dict ={"Solar":"solar_RCMIP", "Volcanic":"VOLC_RCMIP", "Albedo Change":"LUCalbedo_RCMIP"}
@@ -23,23 +24,15 @@ years = []
 #sys.exit(4)
 
 ## Initialising dictionary to hold the data:
-full_data_dict = {}
-## And extra dictionary to hold data from ssp-scenario:
-## This is for components for which data is missing for the ssp
-data_from_rcp ={}
-for s in scenario_list:
-    full_data_dict[s] = {}
-    data_from_rcp[s] = {}
-    for c in components:
-        full_data_dict[s][c] = []
-        data_from_rcp[s][c] = []
+full_data_dict = initialise_empty_dictionaries(scenario_dict=scenario_list, components=components)
 
 print(components)
+print(full_data_dict.keys())
 
 counter = 0
 readfirstline = 0
 
-with open('rcmip-radiative-forcing-annual-means-v3-1-0.csv', 'rt') as csv_ssp_file:
+with open('data/rcmip-radiative-forcing-annual-means-v3-1-0.csv', 'rt') as csv_ssp_file:
 #with open('rcmip-radiative-forcing-annual-means-ssp370-lowNTCF-only-20191218T1425.csv', 'rt') as csv_ssp_file:
     datareader = csv.reader(csv_ssp_file, delimiter=',')
     for line in datareader:
@@ -61,8 +54,8 @@ with open('rcmip-radiative-forcing-annual-means-v3-1-0.csv', 'rt') as csv_ssp_fi
         c = line[3].split("|")[-1]
         if c not in components:
             continue
-        data = np.array(map(lambda x: 0. if x == '' else float(x), line[7:]))
-        print(data)
+        data = np.array(list(map(lambda x: 0. if x == '' else float(x), line[7:])))
+        #print(data)
         #print(line[7:])
         #sys.exit(4)
 #        conv_factor = 1

@@ -6,7 +6,7 @@ import pandas as pd
 
 from interpolation_of_input import interpolate_data, interpolate_array_with_nans
 from interpolation_of_input import interpolate_data_wconstant_start
-from misc_utils import unit_conv_factor_long_name, unit_name_converter, component_renaming
+from misc_utils import unit_conv_factor_long_name, initialise_empty_dictionaries, component_renaming
 
 #component_dict = {"MAGICC AFOLU":"CO2_lu", "CFC113":"CFC-113", "CFC114":"CFC-114", "Sulfur":"SO2", "VOC":"NMVOC", "CFC11":"CFC-11", "CFC115":"CFC-115", "CFC12":"CFC-12", "HCFC141b":"HCFC-141b", "HCFC142b":"HCFC-142b", "HCFC22":"HCFC-22", "Halon1211":"H-1211", "Halon1301":"H-1301", "Halon2402":"H-2402","MAGICC Fossil and Industrial":"CO2"} # Halon1212, CH3Cl
 
@@ -59,19 +59,6 @@ def initialise_comp_unit_dict(gaspam_file):
     print(components)
     print(units)
     return components, units
-
-def initialise_empty_dictionaries(scenario_dict, components):
-    ## Initialising dictionary to hold the data:
-    # TODO: Get rid of RCMIP part
-    full_data_dict = {}
-
-    for s in scenario_dict:
-
-        full_data_dict[s] = {}
-        for c in components:
-            full_data_dict[s][c] = []
-
-    return full_data_dict
 
 
 def read_iamc_and_convert(components, units, scenario_dict, iamc_data_file):
