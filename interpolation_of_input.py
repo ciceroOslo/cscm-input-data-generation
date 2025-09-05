@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def interpolate_data(data):
@@ -33,6 +34,18 @@ def interpolate_data_wconstant_start(data,start=150,startval=0):
             data[i] = startval
     #print(data)
     return interpolate_data(data)
+
+def interpolate_array_with_nans(data, years):
+    #print(years)
+    #print(type(data))
+    xp = years[~np.isnan(data)]
+    fp = data[~np.isnan(data)]
+    x = years[np.isnan(data)]
+    #print(xp)
+    #print(fp)
+
+    data[np.isnan(data)] = np.interp(x, xp, fp)
+    return data
 
 if __name__ == "__main__":
     test_data = ['','','','',1.5,'','',4.5,5.5,6.5,7.5,'','',4]
