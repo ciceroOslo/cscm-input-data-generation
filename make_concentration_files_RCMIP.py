@@ -204,26 +204,6 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
 
                 line = line + "\n"
                 lines.append(line)
-
-                #Now making interpolation for years with no data:
-                if (i < len(years)-1) and (int(years[i+1]) > int(years[i])+1):
-                    y0 = int(years[i])
-                    y1 = int(years[i+1])
-                    #Looping over missing years:    
-                    for y in range(y0+1,y1):
-                        #print y
-                        line = str(y)
-                        #Using simple linear interpolation formula for each component:
-                        for c in components:
-                            if len(full_data_dict[s][c])> 0:
-                                cy = str((full_data_dict[s][c][i]*(y1-y) + full_data_dict[s][c][i+1]*(y-y0))/(y1-y0))
-                                line = line + "\t" + cy
-                                
-                            else:
-                                cy = str((float(data_from_rcp[s][c][i])*(y1-y) + float(data_from_rcp[s][c][i+1])*(y-y0))/(y1-y0))
-                                line = line + "\t" +  cy
-                        line = line + "\n"
-                        lines.append(line)
                         
             refline = refline + "\n"
             #Writing out the reference line:

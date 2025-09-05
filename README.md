@@ -23,7 +23,15 @@ versions of ciceroscm, checkout a newer version of the repository.
 ### `make_scenario_files_RCMIP.py`
 This script is used to read in and convert RCMIP emissions data to ciceroscm data
 Specify in the top of the __main__ block which scenarios (and rcp sceanrios) that 
-you want to convert. Then a gaspamfile is used to find the components and units 
+you want to convert or leave open and all scenarios in the datafile will be processed. Then a gaspamfile is used to find the components and units 
+that need to be read from rcmip formatted csv. This data is read, converted to 
+appropriate units and linearly interpolated to missing years. Finally a formatted
+file is printed for each scenario.
+
+### `make_scenario_files_IAMC.py`
+This script is used to read in and convert newer scenariomip IAMC data to ciceroscm data
+Specify in the top of the __main__ block which scenarios that 
+you want to convert or leave open and all scenarios in the datafile will be processed. Then a gaspamfile is used to find the components and units 
 that need to be read from rcmip formatted csv. This data is read, converted to 
 appropriate units and linearly interpolated to missing years. Finally a formatted
 file is printed for each scenario.
@@ -31,8 +39,16 @@ file is printed for each scenario.
 ### `make_concentration_files_RCMIP.py`
 This script is used to read in and convert RCMIP concentrations data to ciceroscm data
 Specify in the top of the __main__ block which scenarios (and rcp sceanrios) that 
-you want to convert. Then a gaspamfile is used to find the components and units 
+you want to convert or leave open and all scenarios in the datafile will be processed. Then a gaspamfile is used to find the components and units 
 that need to be read from rcmip formatted csv. This data is read, converted to 
+appropriate units and linearly interpolated to missing years. Finally a formatted
+file is printed for each scenario.
+
+
+### `make_concentration_files_IGCC.py`
+This script is used to read in and convert IGCC concentrations data to ciceroscm data
+Specify in the top of the __main__ a possible ssp-file to fudge the data with into the future, otherwise the file will stop where the igcc datafile stops. Then a gaspamfile is used to find the components and units 
+that need to be read from igcc formatted csv. This data is read, converted to 
 appropriate units and linearly interpolated to missing years. Finally a formatted
 file is printed for each scenario.
 
@@ -43,6 +59,10 @@ Specify in the top of the __main__ block which scenarios (and rcp sceanrios) tha
 you want to convert from rcmip formatted csvs. This data is read, converted and 
 linearly interpolated to missing years. Finally a formatted
 files are printed for each scenario and forcing type specified.
+
+### `make_RF_files_IGCC.py`
+This script is used to read in and convert IGCC forcing data for Solar, Volcanic and 
+Land Use Albedo change data to ciceroscm compatible data formats for these.
 
 ### `make_input_w_regional_aerosol.py`
 Is a supplement to  `make_scenario_files_RCMIP.py`, which can take an existing
@@ -56,3 +76,11 @@ This provides a very rudimentary and inefficent implementation of linear
 interpolation which is used in some of the other scripts. If you are looking
 at a newer version of this repository (v>1) and you still see this section here
 someone has not done their job.
+
+### `misc_utils.py`
+Collection of various shared functionality, like component name mapping, unit conversion etc.
+
+
+This repository was built to work with input data from
+* RCMIP: 10.5281/zenodo.4589726.
+* IGCC: https://doi.org/10.5281/zenodo.15639576
