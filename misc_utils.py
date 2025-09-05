@@ -1,6 +1,7 @@
 import csv
 import sys
 import numpy as np
+import pandas as pd
 
 SPECIAL_COMPONENTS_DICT = {
     "MAGICC AFOLU":"CO2_lu",
@@ -11,6 +12,8 @@ SPECIAL_COMPONENTS_DICT = {
     "AFOLU":"CO2_lu",
     "Albedo Change": "land_use",
 }
+
+ROW_NUM_SKIP_GASPAM = {1: "X", 2:"-"}
 
 # Method to convert the unit names from tonnes to grams
 def unit_name_converter(unit):
@@ -95,3 +98,70 @@ def initialise_empty_dictionaries(scenario_dict, components):
             full_data_dict[s][c] = []
 
     return full_data_dict
+
+def initialise_comp_unit_dict(gaspam_file, emissions= True):
+    comp_temp = []
+    unit_temp = []
+    if emissions:
+        unit_col = 1
+    else:
+        unit_col = 2
+
+    with open(gaspam_file, 'r') as txt_rcpfile:
+        gasreader = csv.reader(txt_rcpfile, delimiter = '\t')
+        # Skipping header
+        head = next(gasreader)
+        for row in gasreader:
+            if(row[unit_col] == ROW_NUM_SKIP_GASPAM[unit_col]):
+            #    components.append('CO2_lu')
+            #else:
+                continue
+            else:
+                comp_temp.append(row[0])
+                unit_temp.append(row[unit_col])
+    if not emissions:
+        return comp_temp, unit_temp
+    
+    components = comp_temp[:]
+    units = unit_temp[:]
+    components.insert(1,'CO2_lu')
+    units.insert(1,'Pg_C')
+    return components, units
+
+def lift_scenariolist_from_datafile(datafile, as_dict = False):
+
+    dataframe = pd.read_csv(datafile)
+    print(dataframe.columns)
+    if "variable" in dataframe.columns:
+        var_name = "variable"
+        model_name = "model"
+        scen_name = "scenario"
+    elif "Variable" in dataframe.columns:
+        var_name = "Variable"
+        model_name = "Model"
+        scen_name = "Scenario"            
+    print(pd.unique(dataframe[var_name]))
+    long_scen_names = dataframe[[model_name, scen_name]].drop_duplicates()
+    short_scen_names = dataframe[[scen_name]].drop_duplicates()
+    print(long_scen_names.shape)
+    print(short_scen_names.shape)
+
+    if as_dict:
+        scenario_list = {}
+
+        for row, content in long_scen_names.iterrows():
+            if short_scen_names.shape[0] == long_scen_names.shape[0]:
+                scenario = f"{content[scen_name].lower().replace(' ', '')}"
+            else:
+                scenario = f"{content[scen_name].lower().replace(' ', '')}_{content[model_name].lower().replace(' ', '')}"
+            scenario_list[scenario] = [content[model_name], content[scen_name]]                
+        print(scenario_list)
+    else:
+        scenario_list = []
+        for row, content in long_scen_names.iterrows():
+            if short_scen_names.shape[0] == long_scen_names.shape[0]:
+                scenario_list.append(content[scen_name])
+            else:
+                scenario_list.append(f"{content[scen_name].lower().replace(' ', '')}_{content[model_name].lower().replace(' ', '')}")
+    return scenario_list
+

@@ -6,62 +6,17 @@ import pandas as pd
 
 from interpolation_of_input import interpolate_data
 from interpolation_of_input import interpolate_data_wconstant_start
-from misc_utils import unit_conv_factor, unit_name_converter, component_renaming
+from misc_utils import unit_conv_factor, unit_name_converter, initialise_comp_unit_dict, component_renaming, lift_scenariolist_from_datafile
 
 #component_dict = {"MAGICC AFOLU":"CO2_lu", "CFC113":"CFC-113", "CFC114":"CFC-114", "Sulfur":"SO2", "VOC":"NMVOC", "CFC11":"CFC-11", "CFC115":"CFC-115", "CFC12":"CFC-12", "HCFC141b":"HCFC-141b", "HCFC142b":"HCFC-142b", "HCFC22":"HCFC-22", "Halon1211":"H-1211", "Halon1301":"H-1301", "Halon2402":"H-2402","MAGICC Fossil and Industrial":"CO2"} # Halon1212, CH3Cl
 
 def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, scenario_list = None):
     components, units = initialise_comp_unit_dict(gaspam_file=gaspam_file)
     if scenario_list is None:
-        dataframe = pd.read_csv(iamc_data_file)
-        print(dataframe.columns)
-        if "variable" in dataframe.columns:
-            var_name = "variable"
-            model_name = "model"
-            scen_name = "scenario"
-        elif "Variable" in dataframe.columns:
-            var_name = "Variable"
-            model_name = "Model"
-            scen_name = "Scenario"            
-        print(pd.unique(dataframe[var_name]))
-        long_scen_names = dataframe[[model_name, scen_name]].drop_duplicates()
-        short_scen_names = dataframe[[scen_name]].drop_duplicates()
-        print(long_scen_names.shape)
-        print(short_scen_names.shape)
-        scenario_list = []
-
-        for row, content in long_scen_names.iterrows():
-            if short_scen_names.shape[0] == long_scen_names.shape[0]:
-                scenario_list.append(f"{content[scen_name].lower().replace(' ', '')}")
-            else:
-                scenario_list.append(f"{content[scen_name].lower().replace(' ', '')}_{content[model_name].lower().replace(' ', '')}")
-        print(scenario_list)
+        scenario_list = lift_scenariolist_from_datafile(iamc_data_file)
     ## Initialising dictionary to hold the data:
     full_data_dict, data_from_rcp, years = read_line_by_line(components, units, scenario_list, iamc_data_file)
     write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years)
-
-def initialise_comp_unit_dict(gaspam_file):
-    comp_temp = []
-    unit_temp = []
-    with open(gaspam_file, 'r') as txt_rcpfile:
-        gasreader = csv.reader(txt_rcpfile, delimiter = '\t')
-        # Skipping header
-        head = next(gasreader)
-        for row in gasreader:
-            if(row[1] == 'X'):
-            #    components.append('CO2_lu')
-            #else:
-                continue
-            else:
-                comp_temp.append(row[0])
-                unit_temp.append(row[1])
-    components = comp_temp[:]
-    units = unit_temp[:]
-    components.insert(1,'CO2_lu')
-    units.insert(1,'Pg_C')
-    print(components)
-    print(units)
-    return components, units
 
 def initialise_empty_dictionaries_wrcp(scenario_list, components):
     ## Initialising dictionary to hold the data:
@@ -369,25 +324,9 @@ if __name__ == "__main__":
     #scenario_list = ["historical", "ssp370", "ssp370-lowNTCF", "ssp434", "ssp460", "ssp119", "ssp126", "ssp245", "ssp534-over", "ssp585","esm-bell-1000PgC", "esm-bell-2000PgC", "esm-bell-750PgC", "esm-pi-CO2pulse",  "esm-pi-cdr-pulse", "esm-piControl", "historical_cmip5"]
     scenario_list = ["ssp245", "rcp60"]
     #make_emissions_scenario_files("../ciceroscm/tests/test-data/gases_v1RCMIP.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
-    make_emissions_scenario_files("gases_vupdate_2024_WMO.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv")#, scenario_list=scenario_list)
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv")#, scenario_list=scenario_list)
     #ssp_rcp_dict = {"rcp60":"rcp_6.0.txt","rcp85":"rcp_8.5.txt","rcp45":"rcp_4.5.txt"}#"esm-pi-CO2pulse":"rcp_6.0.txt", "esm-pi-cdr-pulse":"rcp_6.0.txt","esm-piControl":"rcp_4.5.txt", "historical-cmip5":"rcp_6.0.txt"}
     #NBNB!! Check mappings for last four
-
-    #sys.exit(4)
-    ssp245_orig = pd.read_csv("../ciceroscm/tests/test-data/ssp245_em_RCMIP.txt", sep=r"\s+", index_col=0, skiprows=[1, 2, 3])
-    ssp245_here = pd.read_csv("../ciceroscm/tests/test-data/ssp245_em_RCMIP.txt", sep=r"\s+", index_col=0, skiprows=[1, 2, 3])
-
-    make_emissions_scenario_files("gases_vupdate_2024_WMO.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv")
-            
-            #print "Success " + (',').join(line)
-    #print counter
-    #print years
-    #sys.exit(4)
-    #print full_data_dict["SSP2-45"]
-    #print unit_dict
-
-    ##Now printing the data to scenario files file:
-    
 
         
                 
