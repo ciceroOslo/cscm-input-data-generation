@@ -1,6 +1,6 @@
 # Repository of scripts to make input files for the cicero-scm climate model
 
-## This is the version as used in RCMIP phases I and II
+## This is a first version to use towards AR7 with RCMIP functionality stil intact
 To get the RCMIP phases I and II versions use checkout tag v0.0.0-RCMIPI
 
 It is built to deal with and convert RCMIP format files from these
