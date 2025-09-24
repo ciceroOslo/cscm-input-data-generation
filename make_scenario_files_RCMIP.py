@@ -16,7 +16,7 @@ def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, 
         scenario_list = lift_scenariolist_from_datafile(iamc_data_file)
     ## Initialising dictionary to hold the data:
     full_data_dict, data_from_rcp, years = read_line_by_line(components, units, scenario_list, iamc_data_file)
-    write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years)
+    write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years, fname_end=f"em_{gaspam_file.split('/')[-1].split('.')[0]}.txt")
 
 def initialise_empty_dictionaries_wrcp(scenario_list, components):
     ## Initialising dictionary to hold the data:
@@ -204,7 +204,7 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
                 full_data_dict[s][total_comp] = full_data_dict[s][total_comp] - data*conv_factor
     return full_data_dict, data_from_rcp, years
 
-def write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years):
+def write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years, fname_end = "em_RCMIP.txt"):
     for s in scenario_list:
         """
         if s in ssp_rcp_dict:
@@ -222,7 +222,7 @@ def write_file_for_each_scenario(full_data_dict, scenario_list, units, component
         """        
         #    fname =  "%s_%s.%s_em_RCMIP.txt"%(s[0:4],s[5], s[6])
         #fname =  "%smethane_em_RCMIP.txt"%(s)
-        fname =  "%s_em_RCMIP.txt"%(s)
+        fname =  f"{s}_{fname_end}"
         with open(fname, 'w') as f:
             f.write("Component \t CO2 \t CO2 \t %s \n"%("\t".join(str(c) for c in components[2:])))
             f.write("Unit \t %s\n"%("\t".join(str(u) for u in units)))
@@ -324,7 +324,7 @@ if __name__ == "__main__":
     #scenario_list = ["historical", "ssp370", "ssp370-lowNTCF", "ssp434", "ssp460", "ssp119", "ssp126", "ssp245", "ssp534-over", "ssp585","esm-bell-1000PgC", "esm-bell-2000PgC", "esm-bell-750PgC", "esm-pi-CO2pulse",  "esm-pi-cdr-pulse", "esm-piControl", "historical_cmip5"]
     scenario_list = ["ssp245", "rcp60"]
     #make_emissions_scenario_files("../ciceroscm/tests/test-data/gases_v1RCMIP.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
-    make_emissions_scenario_files("data/gases_vupdate_2024_WMO.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv")#, scenario_list=scenario_list)
+    make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv")#, scenario_list=scenario_list)
     #ssp_rcp_dict = {"rcp60":"rcp_6.0.txt","rcp85":"rcp_8.5.txt","rcp45":"rcp_4.5.txt"}#"esm-pi-CO2pulse":"rcp_6.0.txt", "esm-pi-cdr-pulse":"rcp_6.0.txt","esm-piControl":"rcp_4.5.txt", "historical-cmip5":"rcp_6.0.txt"}
     #NBNB!! Check mappings for last four
 

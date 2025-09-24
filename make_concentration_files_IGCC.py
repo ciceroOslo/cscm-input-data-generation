@@ -21,7 +21,7 @@ def make_single_IGCC_concentrations_file(gaspam_file, igcc_file, ssp_fudge_file=
 
         full_data_dict, years = fudge_with_ssp(full_data_dict, years, ssp_fudge_file)
     print("Done getting data")
-    write_concentration_file_for_each_scenario(full_data_dict, components, units, years)
+    write_concentration_file_for_each_scenario(full_data_dict, components, units, years, f"conc_{gaspam_file.split('/')[-1].split('.')[0]}.txt")
     print("Done writing to files")
 
 def fudge_with_ssp(full_data_dict, years, ssp_fudge_file):
@@ -68,9 +68,9 @@ def read_concentrations_datafile(igcc_file, components, units, scen = "igcc_hist
 
 ##Now printing the data to scenario files file:
 
-def write_concentration_file_for_each_scenario(full_data_dict, components, units, years):
+def write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end="conc_RCMIP.txt"):
     for s in full_data_dict.keys():
-        fname =  "%s_conc_RCMIP.txt"%(s)
+        fname =  f"{s}_{fname_end}"
         with open(fname, 'w') as f:
             f.write("Component\tCO2 \t %s \n"%("\t".join(str(c) for c in components[1:])))
             f.write("Unit \t %s\n"%("\t".join(str(u) for u in units)))
@@ -117,5 +117,5 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
     
 if __name__ == "__main__":
 
-    make_single_IGCC_concentrations_file("data/gases_vupdate_2024_WMO.txt", "data/ghg_concentrations_igcc.csv")#, ssp_fudge_file="data/ssp245_conc_RCMIP.txt")#, scenario_list=["abrupt-4xCO2"])         
+    make_single_IGCC_concentrations_file("data/gases_vupdate_2024_WMO_added_new.txt", "data/ghg_concentrations_igcc.csv")#, ssp_fudge_file="data/ssp245_conc_RCMIP.txt")#, scenario_list=["abrupt-4xCO2"])         
             
