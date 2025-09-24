@@ -1,5 +1,7 @@
 # Repository of scripts to make input files for the cicero-scm climate model
 
+[![DOI](https://zenodo.org/badge/1047789908.svg)](https://doi.org/10.5281/zenodo.17195848)
+
 ## This is a first version to use towards AR7 with RCMIP functionality stil intact
 To get the RCMIP phases I and II versions use checkout tag v0.0.0-RCMIPI
 
