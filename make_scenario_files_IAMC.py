@@ -6,11 +6,11 @@ import pandas as pd
 
 from interpolation_of_input import interpolate_data, interpolate_array_with_nans
 from interpolation_of_input import interpolate_data_wconstant_start
-from misc_utils import unit_conv_factor_long_name, initialise_empty_dictionaries, initialise_comp_unit_dict, component_renaming, lift_scenariolist_from_datafile
+from misc_utils import unit_conv_factor_long_name, initialise_empty_dictionaries, initialise_comp_unit_dict, component_renaming, lift_scenariolist_from_datafile, glue_scenario_to_historical
 
 #component_dict = {"MAGICC AFOLU":"CO2_lu", "CFC113":"CFC-113", "CFC114":"CFC-114", "Sulfur":"SO2", "VOC":"NMVOC", "CFC11":"CFC-11", "CFC115":"CFC-115", "CFC12":"CFC-12", "HCFC141b":"HCFC-141b", "HCFC142b":"HCFC-142b", "HCFC22":"HCFC-22", "Halon1211":"H-1211", "Halon1301":"H-1301", "Halon2402":"H-2402","MAGICC Fossil and Industrial":"CO2"} # Halon1212, CH3Cl
 
-def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, scenario_dict = None):
+def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, scenario_dict = None, glue_historical=False):
     components, units = initialise_comp_unit_dict(gaspam_file=gaspam_file)
     if historical is not None:
         data_dict_historical, years_hist, refs = read_historical_emissions(components, units, historical)
@@ -20,8 +20,9 @@ def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, 
         scenario_dict = lift_scenariolist_from_datafile(iamc_data_file, as_dict=True)
     ## Initialising dictionary to hold the data:
     full_data_dict, years = read_iamc_and_convert(components, units, scenario_dict, iamc_data_file)
+    if historical is not None and glue_historical:
+        full_data_dict, years = glue_scenario_to_historical(full_data_dict, data_dict_historical, years, years_hist)
     write_file_for_each_scenario(full_data_dict, scenario_dict, units, components, years, f"em_{gaspam_file.split('/')[-1].split('.')[0]}.txt")
-    
 
 def read_historical_emissions(components, units, iamc_data_file):
     full_data_dict = initialise_empty_dictionaries(["historical"], components)
@@ -156,8 +157,8 @@ def write_file_for_each_scenario(full_data_dict, scenario_dict, units, component
                 f.write(l)
 
 if __name__ == "__main__":
-    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv", historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv")
-    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv")
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv", historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)
+    #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv")
             
             #print "Success " + (',').join(line)
     #print counter
