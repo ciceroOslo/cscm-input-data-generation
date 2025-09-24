@@ -32,7 +32,7 @@ def make_concentrations_scenario_files(gaspam_file, rcmip_datafile, scenario_lis
     print(scenario_list)
     full_data_dict, years = read_concentrations_datafile(rcmip_datafile, components, units, scenario_list)
     print("Done getting data")
-    write_concentration_file_for_each_scenario(full_data_dict, components, units, years)
+    write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end=f"conc_{gaspam_file.split('/')[-1].split('.')[0]}.txt")
     print("Done writing to files")
 
 #print(components)
@@ -152,7 +152,7 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
 
 ##Now printing the data to scenario files file:
 
-def write_concentration_file_for_each_scenario(full_data_dict, components, units, years):
+def write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end = "conc_RCMIP.txt",):
     for s in full_data_dict.keys():
 
         """
@@ -169,7 +169,7 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
         """           
             
     #    fname =  "%s_%s.%s_em_RCMIP.txt"%(s[0:4],s[5], s[6])
-        fname =  "%s_conc_RCMIP.txt"%(s)
+        fname =  f"{s}_{fname_end}"
         with open(fname, 'w') as f:
             f.write("Component\tCO2 \t %s \n"%("\t".join(str(c) for c in components[1:])))
             f.write("Unit \t %s\n"%("\t".join(str(u) for u in units)))
@@ -215,5 +215,5 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
     
 if __name__ == "__main__":
 
-    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO.txt", "data/rcmip-concentrations-annual-means-v3-1-0.csv")#, scenario_list=["abrupt-4xCO2"])         
+    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/rcmip-concentrations-annual-means-v3-1-0.csv")#, scenario_list=["abrupt-4xCO2"])         
             
