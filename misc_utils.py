@@ -167,7 +167,7 @@ def lift_scenariolist_from_datafile(datafile, as_dict = False):
 
 def glue_scenario_to_historical(data_dict, data_dict_historical, years, years_hist):
     hist_end_index = np.where(years_hist == years[0])[0][0]
-    print(hist_end_index)
+    #sys.exit(4)
     for scen in data_dict.keys():
         for comp in data_dict[scen].keys():
             print(data_dict_historical["historical"][comp][:hist_end_index])
