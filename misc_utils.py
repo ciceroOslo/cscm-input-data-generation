@@ -128,7 +128,7 @@ def initialise_comp_unit_dict(gaspam_file, emissions= True):
     units.insert(1,'Pg_C')
     return components, units
 
-def lift_scenariolist_from_datafile(datafile, as_dict = False):
+def lift_scenariolist_from_datafile(datafile, as_dict = False, use_short_names = False):
 
     dataframe = pd.read_csv(datafile)
     print(dataframe.columns)
@@ -140,12 +140,9 @@ def lift_scenariolist_from_datafile(datafile, as_dict = False):
         var_name = "Variable"
         model_name = "Model"
         scen_name = "Scenario"            
-    print(pd.unique(dataframe[var_name]))
+    #print(pd.unique(dataframe[var_name]))
     long_scen_names = dataframe[[model_name, scen_name]].drop_duplicates()
     short_scen_names = dataframe[[scen_name]].drop_duplicates()
-    print(long_scen_names.shape)
-    print(short_scen_names.shape)
-
     if as_dict:
         scenario_list = {}
 
@@ -159,7 +156,7 @@ def lift_scenariolist_from_datafile(datafile, as_dict = False):
     else:
         scenario_list = []
         for row, content in long_scen_names.iterrows():
-            if short_scen_names.shape[0] == long_scen_names.shape[0]:
+            if short_scen_names.shape[0] == long_scen_names.shape[0] or use_short_names:
                 scenario_list.append(content[scen_name])
             else:
                 scenario_list.append(f"{content[scen_name].lower().replace(' ', '')}_{content[model_name].lower().replace(' ', '')}")
