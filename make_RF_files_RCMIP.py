@@ -37,9 +37,19 @@ def get_full_data_dict_from_file(filepath = 'data/rcmip-radiative-forcing-annual
     #with open('rcmip-radiative-forcing-annual-means-ssp370-lowNTCF-only-20191218T1425.csv', 'rt') as csv_ssp_file:
         datareader = csv.reader(csv_ssp_file, delimiter=',')
         for line in datareader:
-            #print(line)
             if readfirstline == 0:
-                years = line[7:]
+                # find first element in the row that is a 4-digit year
+                years_begin = None
+                for idx, val in enumerate(line):
+                    try:
+                        if 1000 <= int(val) <= 9999:
+                            years_begin = idx
+                            break
+                    except ValueError:
+                        continue
+                if years_begin is None:
+                    years_begin = 7
+                years = line[years_begin:]
                 readfirstline = 1
                 full_data_dict["constant_zero"]["Albedo Change"] =np.zeros(len(years))
             
@@ -57,7 +67,7 @@ def get_full_data_dict_from_file(filepath = 'data/rcmip-radiative-forcing-annual
             if c not in components:
                 continue
             print(c)
-            data = np.array(list(map(lambda x: 0. if x == '' else float(x), line[7:])))
+            data = np.array(list(map(lambda x: 0. if x == '' else float(x), line[years_begin:])))
             print(data)
             #print(data)
             #print(line[7:])
@@ -112,5 +122,7 @@ def print_full_data_dict(full_data_dict, years, fname_epithet = '', fout_dir = '
             
             
 if __name__ == "__main__":
-    full_data_dict, years = get_full_data_dict_from_file()
-    print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP', fout_dir = './')
+    #full_data_dict, years = get_full_data_dict_from_file()
+    #print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP', fout_dir = './')
+    full_data_dict, years = get_full_data_dict_from_file(filepath = '../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_forcing_v1.0.0.csv')
+    print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP3', fout_dir = '/home/masan/temp/rcmip_inputs_cscm/')
