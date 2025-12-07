@@ -170,6 +170,7 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
                 print(s)
                 print(line[years_begin:])
                 data = np.zeros(len(years))
+                print("interpolation failed for %s %s"%(s,c))
                 sys.exit(4)
             #print(data)
             #sys.exit(4)
@@ -205,14 +206,15 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
                     print(data*conv_factor)
                     full_data_dict[s][c] = data*conv_factor
             else:
+                # This should be happening only for BC and OC components
                 print("Shouldn't really be here... Adding to initialised component with %s and %s"%(s,c))
                 full_data_dict[s][c] = full_data_dict[s][c] + conv_factor*data    
                 #sys.exit(4)
             #Subtracting forest and grassland burning components 
             #from OC and BC:
 
-
             if (c == 'BMB_AEROS_BC' or c =='BMB_AEROS_OC'):
+                print("Subtracting BMB_AEROS from total")
                 total_comp = '%s'%c[-2:]
                 full_data_dict[s][total_comp] = full_data_dict[s][total_comp] - data*conv_factor
     return full_data_dict, data_from_rcp, years
@@ -338,8 +340,8 @@ if __name__ == "__main__":
     #scenario_list = ["historical", "ssp370", "ssp370-lowNTCF", "ssp434", "ssp460", "ssp119", "ssp126", "ssp245", "ssp534-over", "ssp585","esm-bell-1000PgC", "esm-bell-2000PgC", "esm-bell-750PgC", "esm-pi-CO2pulse",  "esm-pi-cdr-pulse", "esm-piControl", "historical_cmip5"]
     scenario_list = ["ssp245", "rcp60"]
     #make_emissions_scenario_files("../ciceroscm/tests/test-data/gases_v1RCMIP.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
-    #make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv")#, scenario_list=scenario_list)
-    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.0.0.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
+    make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
+    #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.0.0.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
     #ssp_rcp_dict = {"rcp60":"rcp_6.0.txt","rcp85":"rcp_8.5.txt","rcp45":"rcp_4.5.txt"}#"esm-pi-CO2pulse":"rcp_6.0.txt", "esm-pi-cdr-pulse":"rcp_6.0.txt","esm-piControl":"rcp_4.5.txt", "historical-cmip5":"rcp_6.0.txt"}
     #NBNB!! Check mappings for last four
 
