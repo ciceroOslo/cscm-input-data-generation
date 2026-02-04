@@ -55,8 +55,9 @@ def unit_conv_factor(proper_unit, unit,c):
 def unit_conv_factor_long_name(proper_unit, unit, c):
     if unit == proper_unit:
         return 1
-    print(component_renaming(c))
-    if (unit.split(" ")[1] == f"{c}/yr") or (f"{component_renaming(unit.split(' ')[1].split('/')[0])}/{unit.split(' ')[1].split('/')[1]}" == f"{c}/yr"):
+    comp_total = "Emissions|"+c
+    #print(component_renaming(c, comp_total=comp_total))
+    if (unit.split(" ")[1] == f"{c}/yr") or (f"{component_renaming(unit.split(' ')[1].split('/')[0], comp_total)}/{unit.split(' ')[1].split('/')[1]}" == f"{c}/yr"):
         if unit.split(" ")[1] in ["NO2/yr", "NOx/yr"]:
             return unit_conv_factor(proper_unit, unit, c)
         if unit.split(" ")[0] == proper_unit or unit_name_converter(unit.split(" ")[0]) == proper_unit:
@@ -68,8 +69,10 @@ def unit_conv_factor_long_name(proper_unit, unit, c):
     return unit_conv_factor(proper_unit, unit, c)
         #return unit_conv_factor(proper_unit, unit.split())
 
-def component_renaming(comp_rcmip):
+def component_renaming(comp_rcmip, comp_total):
     if comp_rcmip in SPECIAL_COMPONENTS_DICT:
+        if SPECIAL_COMPONENTS_DICT[comp_rcmip].startswith("CO2") and not comp_total.startswith("Emissions|CO2"):
+            return comp_total
         return SPECIAL_COMPONENTS_DICT[comp_rcmip]
     if comp_rcmip.startswith("CFC") and comp_rcmip[3] != "-":
         return comp_rcmip.replace("CFC", "CFC-")
@@ -162,14 +165,20 @@ def lift_scenariolist_from_datafile(datafile, as_dict = False, use_short_names =
                 scenario_list.append(f"{content[scen_name].lower().replace(' ', '')}_{content[model_name].lower().replace(' ', '')}")
     return scenario_list
 
-def glue_scenario_to_historical(data_dict, data_dict_historical, years, years_hist):
+def glue_scenario_to_historical(data_dict, data_dict_historical, years, years_hist, infill_inverse_zero =True):
     hist_end_index = np.where(years_hist == years[0])[0][0]
     #sys.exit(4)
+
     for scen in data_dict.keys():
         for comp in data_dict[scen].keys():
             print(data_dict_historical["historical"][comp][:hist_end_index])
             print(data_dict[scen][comp])
-            data_dict[scen][comp] = np.concatenate((data_dict_historical["historical"][comp][:hist_end_index], data_dict[scen][comp]))
+            if np.all(data_dict[scen][comp] == 0) and infill_inverse_zero:
+                data_dict[scen][comp] = np.concatenate((np.zeros(len(data_dict_historical["historical"][comp][:hist_end_index])), data_dict[scen][comp]))
+            else:
+                data_dict[scen][comp] = np.concatenate((data_dict_historical["historical"][comp][:hist_end_index], data_dict[scen][comp]))
     years = np.concatenate((years_hist[:hist_end_index], years))
+
+        
     return data_dict, years
             

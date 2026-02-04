@@ -51,8 +51,8 @@ def get_start_values_from_piControl(df, components, picontrol = "piControl"):
         comp_in = content["Variable"].split("|")[-1]
         if comp_in in components:
             comp = comp_in
-        elif component_renaming(comp_in) in components:
-            comp = component_renaming(comp_in)
+        elif component_renaming(comp_in, comp_in) in components:
+            comp = component_renaming(comp_in, comp_in)
         else:
             #print(f"Found no match for {comp_in}")
             continue
@@ -104,8 +104,8 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
             c = line[3].split("|")[-1]
             #print(line)
             if c not in components:
-                if component_renaming(c) in components:
-                    c = component_renaming(c)
+                if component_renaming(c, c) in components:
+                    c = component_renaming(c, c)
                 else:
                 
                     #print c

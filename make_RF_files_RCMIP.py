@@ -97,11 +97,12 @@ def print_full_data_dict(full_data_dict, years, fname_epithet = '', fout_dir = '
 
         for c in components:
             print(c)
+            if len(full_data_dict[s][c])<1:
+                print("Scenario: %s Compontent: %s has no data"%(s,c))
+                continue
             fname =  f"{fout_dir}{comp_dict[c]}_{s}{fname_epithet}.txt"
             with open(fname, 'w') as f:
-                if len(full_data_dict[s][c])<1:
-                    print("Scenario: %s Compontent: %s"%(s,c))
-                    continue
+
                 if c == 'Volcanic':
                     for i in range(len(years)):
                         line = ""

@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-from interpolation_of_input import interpolate_data, interpolate_array_with_nans
-from interpolation_of_input import interpolate_data_wconstant_start
+from interpolation_of_input import interpolate_array_with_nans
 from misc_utils import unit_conv_factor_long_name, initialise_empty_dictionaries, initialise_comp_unit_dict, component_renaming, lift_scenariolist_from_datafile, glue_scenario_to_historical
 
 #component_dict = {"MAGICC AFOLU":"CO2_lu", "CFC113":"CFC-113", "CFC114":"CFC-114", "Sulfur":"SO2", "VOC":"NMVOC", "CFC11":"CFC-11", "CFC115":"CFC-115", "CFC12":"CFC-12", "HCFC141b":"HCFC-141b", "HCFC142b":"HCFC-142b", "HCFC22":"HCFC-22", "Halon1211":"H-1211", "Halon1301":"H-1301", "Halon2402":"H-2402","MAGICC Fossil and Industrial":"CO2"} # Halon1212, CH3Cl
@@ -20,6 +19,9 @@ def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, 
         scenario_dict = lift_scenariolist_from_datafile(iamc_data_file, as_dict=True)
     ## Initialising dictionary to hold the data:
     full_data_dict, years = read_iamc_and_convert(components, units, scenario_dict, iamc_data_file)
+    #print(full_data_dict)
+    ##print(years)
+    #sys.exit(4)
     if historical is not None and glue_historical:
         full_data_dict, years = glue_scenario_to_historical(full_data_dict, data_dict_historical, years, years_hist)
     write_file_for_each_scenario(full_data_dict, scenario_dict, units, components, years, f"em_{gaspam_file.split('/')[-1].split('.')[0]}_{fname_end}")
@@ -37,11 +39,12 @@ def read_historical_emissions(components, units, iamc_data_file):
     refs = initialise_empty_dictionaries(["historical"], components)
     for row, content in df.iterrows():
         comp_in = content["variable"].split("|")[-1]
+        comp_total = content["variable"]
         print(comp_in)
         if comp_in in components:
             comp = comp_in
-        elif component_renaming(comp_in) in components:
-            comp = component_renaming(comp_in)
+        elif component_renaming(comp_in, comp_total) in components:
+            comp = component_renaming(comp_in, comp_total)
             print(comp)
         else:
             print(f"Found no match for {comp_in}")
@@ -63,39 +66,61 @@ def read_historical_emissions(components, units, iamc_data_file):
 def read_iamc_and_convert(components, units, scenario_dict, iamc_data_file):
     full_data_dict = initialise_empty_dictionaries(scenario_dict, components)
     df = pd.read_csv(iamc_data_file)
+    # If a column name starts with a capital letter, rename it to all lowercase
+    new_columns = []
+    for col in df.columns:
+        if isinstance(col, str) and len(col) > 0 and col[0].isupper():
+            new_columns.append(col.lower())
+        elif isinstance(col, str) and len(col) >= 4 and col[:4].isdigit():
+            new_columns.append(int(col[:4]))
+        else:
+            new_columns.append(col)
+    df.columns = new_columns
     for num,column in enumerate(df.columns):
         try:
             print(int(column))
             break
         except (ValueError, TypeError):
+            
             print(f"Column {column} not int")
     years = np.array(df.columns[num:], int)
+    years_total = np.arange(years[0], years[-1]+1)
     for scen_short, scen_details in scenario_dict.items():
         data = df.loc[(df["region"] == "World") & (df["scenario"]==scen_details[1]) & (df["model"] == scen_details[0])]
-
+        print(data)
         for row, content in data.iterrows():
             comp_in = content["variable"].split("|")[-1]
+            comp_total = content["variable"]
             print(comp_in)
+            print(row)
+            print(content)
             if comp_in in components:
                 comp = comp_in
-            elif component_renaming(comp_in) in components:
-                comp = component_renaming(comp_in)
+            elif component_renaming(comp_in, comp_total) in components:
+                comp = component_renaming(comp_in, comp_total=comp_total)
                 print(comp)
             else:
                 print(f"Found no match for {comp_in}")
                 continue
             unit_c = units[components.index(comp)]
+            print(content["unit"])
             #print(content)
             #print(comp)
             #print(f"Starting point is input unit {content['unit']} and desired unit {unit_c} for {comp}")
             conv_factor = unit_conv_factor_long_name(unit_c, content["unit"], comp)
             #print(f"Component {comp} with unit_c {unit_c}, input unit {content['unit']} and conv_factor {conv_factor}")
-            full_data_dict[scen_short][comp] = conv_factor * interpolate_array_with_nans(np.array(content.iloc[num:],float),years)
+            if len(years_total) > len(years):
+                full_data_dict[scen_short][comp] = conv_factor * np.interp(years_total, years, np.array(content.iloc[num:],float))
+            else:
+                full_data_dict[scen_short][comp] = conv_factor * interpolate_array_with_nans(np.array(content.iloc[num:],float),years)
+            #print(full_data_dict[scen_short][comp])
+            #sys.exit(4)
         for c in components:
             if len(full_data_dict[scen_short][c]) < len(years):
                 print(f"Found no data for {c}")
-                full_data_dict[scen_short][c] = np.zeros(len(years))
-    return full_data_dict, years
+                full_data_dict[scen_short][c] = np.zeros(len(years_total))
+    print("Ready to return")
+    return full_data_dict, years_total
 
 def make_ref_line(full_data_dict, components, scenario, refs = None):
     refline = ("Reference")
@@ -169,7 +194,11 @@ def write_file_for_each_scenario(full_data_dict, scenario_dict, units, component
                 f.write(l)
 
 if __name__ == "__main__":
-    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "/home/masan/temp/DIAMOND_4.4/baseline_run_openprom_reshaped.csv", fname_end="em_DiamondBaseline.txt",historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../emissions_harmonization_historical/notebooks/continuous_emissions_timeseries_1750_2500.csv", glue_historical=False)
+    # make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "/home/masan/temp/DIAMOND_4.4/GCAM-Europe-NECP-global-emiss-12Dec2025.csv", fname_end="em_DiamondGCM-Europe.txt",historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)# scenario_dict={"GCAM-Europe-EU_NCEP-LTT": "EU_NCEP_LTT"} )
+    #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv", historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)
+    #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv", historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)
+    #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "/home/masan/temp/DIAMOND_4.4/baseline_run_openprom_reshaped.csv", fname_end="em_DiamondBaseline.txt",historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)
     #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv", historical="data/historical_emissions_from_emissions_harmonisation_Sep2025.csv", glue_historical=True)
     #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/20250818_0003_0003_0002_infilled-emissions.csv")
             
