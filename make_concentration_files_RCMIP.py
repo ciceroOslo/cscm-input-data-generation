@@ -226,4 +226,5 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
 if __name__ == "__main__":
 
     #make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/rcmip-concentrations-annual-means-v3-1-0.csv")#, scenario_list=["abrupt-4xCO2"])         
-    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.0.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])          
+    #make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])   
+    make_concentrations_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")       

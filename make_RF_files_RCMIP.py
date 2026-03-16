@@ -9,6 +9,8 @@ from misc_utils import initialise_empty_dictionaries
 #scenario_list = ["SSP1-19", "SSP1-26", "SSP2-45", "SSP3-70 (Baseline)", "SSP3-LowNTCF", "SSP4-34", "SSP4-60", "SSP5-34-OS", "SSP5-85 (Baseline)"]
 #scenario_list = ["historical-cmip5", "rcp60", "rcp26", "rcp85", "rcp45", "esm-pi-CO2pulse", "esm-pi-cdr-pulse", "esm-piControl", "esm-bell-1000PgC", "esm-bell-2000PgC", "esm-bell-750PgC" 
 scenario_list = ["historical", "historical-cmip6", "ssp370", "ssp370-lowNTCF", "ssp434", "ssp460", "ssp119", "ssp126", "ssp245", "ssp534-over", "ssp585", "rcp60", "rcp85", "rcp45", "rcp26","constant_zero"]
+#scenario_list = ["scen7-H", "scen7-L", "scen7-M", "scen7-HL", "scen7-LN", "scen7-VL"]
+
 #scenario_list = ["ssp370-lowNTCF-aerchemmip", "ssp370-lowNTCF-gidden", "constant_zero"]
 #scenario_list = ["historical", "constant_zero"]
 components = ["Solar", "Volcanic", "Albedo Change"]
@@ -51,7 +53,8 @@ def get_full_data_dict_from_file(filepath = 'data/rcmip-radiative-forcing-annual
                     years_begin = 7
                 years = line[years_begin:]
                 readfirstline = 1
-                full_data_dict["constant_zero"]["Albedo Change"] =np.zeros(len(years))
+                if "constant_zero" in scenario_list:
+                    full_data_dict["constant_zero"]["Albedo Change"] =np.zeros(len(years))
             
             #Skip the lines we are not interested in:
             if line[2] != "World":
@@ -125,5 +128,5 @@ def print_full_data_dict(full_data_dict, years, fname_epithet = '', fout_dir = '
 if __name__ == "__main__":
     #full_data_dict, years = get_full_data_dict_from_file()
     #print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP', fout_dir = './')
-    full_data_dict, years = get_full_data_dict_from_file(filepath = '../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_forcing_v1.0.0.csv')
+    full_data_dict, years = get_full_data_dict_from_file(filepath = '../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_forcing_v1.1.0.csv')
     print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP3', fout_dir = '/home/masan/temp/rcmip_inputs_cscm/')

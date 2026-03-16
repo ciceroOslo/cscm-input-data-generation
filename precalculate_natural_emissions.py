@@ -14,6 +14,7 @@ data_dir = os.path.join(os.path.dirname(__file__), "..", "ciceroscm", "tests", "
 nyend = 2500
 nyend_hist = 2023
 nystart = 1750
+gases_version = "vupdate_2024_WMO_added_new" # Change this to use different version of gases data file (e.g. "vupdate_2022_AR6.txt")
 
 # Choose the lifetime mode assumption for methane
 # lifetime_modes = ["TAR", "CONSTANT_12", "CONSTANT_from_file", "WIGLEY"]
@@ -29,9 +30,11 @@ ih_temp = input_handler.InputHandler(pamset)
 #em_data = ih_temp.read_emissions(os.path.join(data_dir, "ssp245_em_RCMIP.txt"))
 #conc_data =  input_handler.read_inputfile(os.path.join(data_dir, "ssp245_conc_RCMIP.txt"))
 #gaspam_data = input_handler.read_components(os.path.join(data_dir, "gases_vupdate_2022_AR6.txt"))
-em_data = ih_temp.read_emissions("../cscm-calibration/data/calibration_data_Sep2025/historical_em_gases_vupdate_2024_WMO_added_new.txt")
-conc_data =  input_handler.read_inputfile("../cscm-calibration/data/calibration_data_Sep2025/igcc_historical_conc_gases_vupdate_2024_WMO_added_new.txt")
-gaspam_data = input_handler.read_components(os.path.join(data_dir, "gases_vupdate_2024_WMO_added_new.txt"))
+#em_data = ih_temp.read_emissions("../cscm-calibration/data/calibration_data_Sep2025/historical_em_gases_vupdate_2024_WMO_added_new.txt")
+#conc_data =  input_handler.read_inputfile("../cscm-calibration/data/calibration_data_Sep2025/igcc_historical_conc_gases_vupdate_2024_WMO_added_new.txt")
+em_data = ih_temp.read_emissions(f"/home/masan/temp/rcmip_inputs_cscm/historical_em_gases_{gases_version}.txt")
+conc_data =  input_handler.read_inputfile(f"/home/masan/temp/rcmip_inputs_cscm/historical_conc_gases_{gases_version}.txt")
+gaspam_data = input_handler.read_components(os.path.join(data_dir, f"gases_{gases_version}.txt"))
 
 def get_lifetime(tracer, yr, ce_handler):
     """
@@ -151,9 +154,9 @@ for j, tracer in enumerate(tracers):
 
     #print(len(em_nat_out_ode))
     #print(em_nat_out_ode)
-    np.savetxt(f"natemis_{tracer}_ode_method_from_Sep2025_updates.txt", em_nat_out_ode,fmt='%1.4f')
+    np.savetxt(f"/home/masan/temp/rcmip_inputs_cscm/natemis_{tracer}_ode_method_from_March2026_{gases_version}.txt", em_nat_out_ode,fmt='%1.4f')
 
 fig.tight_layout()
-fig.savefig(f"natural_emissions_{lf_mode}_method_from_Sep2025_updates.png")
+fig.savefig(f"/home/masan/temp/rcmip_inputs_cscm/natural_emissions_{lf_mode}_method_from_March2026_{gases_version}.png")
 
 
