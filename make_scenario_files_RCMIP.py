@@ -368,8 +368,9 @@ if __name__ == "__main__":
     #make_emissions_scenario_files("../ciceroscm/tests/test-data/gases_v1RCMIP.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
     #make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
     #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.0.0.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
-    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.1.0.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
-    #make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/ScenarioMIP/rcmip_phase3_emissions_ScenarioMIP_v1.1.0.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["historical"])
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.1.6.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
+    make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/ScenarioMIP/rcmip_phase3_emissions_ScenarioMIP_v1.1.6.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["historical"])
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/ScenarioMIP/rcmip_phase3_emissions_ScenarioMIP_v1.1.6.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
     #ssp_rcp_dict = {"rcp60":"rcp_6.0.txt","rcp85":"rcp_8.5.txt","rcp45":"rcp_4.5.txt"}#"esm-pi-CO2pulse":"rcp_6.0.txt", "esm-pi-cdr-pulse":"rcp_6.0.txt","esm-piControl":"rcp_4.5.txt", "historical-cmip5":"rcp_6.0.txt"}
     #NBNB!! Check mappings for last four
 

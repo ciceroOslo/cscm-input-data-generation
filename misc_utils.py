@@ -134,7 +134,6 @@ def initialise_comp_unit_dict(gaspam_file, emissions= True):
 def lift_scenariolist_from_datafile(datafile, as_dict = False, use_short_names = False):
 
     dataframe = pd.read_csv(datafile)
-    print(dataframe.columns)
     if "variable" in dataframe.columns:
         var_name = "variable"
         model_name = "model"

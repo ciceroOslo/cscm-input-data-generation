@@ -27,7 +27,7 @@ def make_concentrations_scenario_files(gaspam_file, rcmip_datafile, scenario_lis
     components, units = initialise_comp_unit_dict(gaspam_file=gaspam_file, emissions=False)
     print("Done components and units")
     if scenario_list is None:
-        scenario_list = lift_scenariolist_from_datafile(rcmip_datafile)
+        scenario_list = lift_scenariolist_from_datafile(rcmip_datafile, use_short_names=True)
     print("Done finding scenarios_list")
     print(scenario_list)
     full_data_dict, years = read_concentrations_datafile(rcmip_datafile, components, units, scenario_list)
@@ -91,8 +91,7 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
                 if years_begin is None:
                     years_begin = 7
                 years = np.array(line[years_begin:], int)
-                readfirstline = 1
-            
+                readfirstline = 1 
             #Skip the lines we are not interested in:
             if line[2] != "World":
                 continue
@@ -102,6 +101,7 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
             # line:
             s = line[1]
             c = line[3].split("|")[-1]
+            #print(line)  
             #print(line)
             if c not in components:
                 if component_renaming(c, c) in components:
@@ -151,6 +151,13 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
                 full_data_dict[s][c] = data*conv_factor
             else:
                 full_data_dict[s][c] = full_data_dict[s][c] + conv_factor*data
+            #print(full_data_dict[s][c])
+            #sys.exit(4)
+            #print(s)
+            #print(c)
+            #sys.exit(4)
+    #print(full_data_dict)
+    #sys.exit(4)
     return full_data_dict, years
             
             #print "Success " + (',').join(line)
@@ -177,7 +184,7 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
                     for i in range(len(components)):
                         data_from_rcp[s][components[i]].append(line[i+1])
         """           
-            
+        print(s)
     #    fname =  "%s_%s.%s_em_RCMIP.txt"%(s[0:4],s[5], s[6])
         fname =  f"{fout_dir}{s}_{fname_end}"
         with open(fname, 'w') as f:
@@ -196,7 +203,10 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
                     continue
                 for c in components:
                     if len(full_data_dict[s][c])> 0:
+                        print(c)
                         line = line + "\t" + str(full_data_dict[s][c][i])
+                        #print(full_data_dict[s][c][i])
+                        #sys.exit(4)
                         #Noting in the reference line that there is
                         #data from the ssp
                         if i == 0:
@@ -211,7 +221,7 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
                         #taken from the rcp
                         if i == 0:
                             refline = refline + "\t" + "No data"
-
+                #print(line)
                 line = line + "\n"
                 lines.append(line)
                         
@@ -226,5 +236,6 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
 if __name__ == "__main__":
 
     #make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/rcmip-concentrations-annual-means-v3-1-0.csv")#, scenario_list=["abrupt-4xCO2"])         
-    #make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])   
-    make_concentrations_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")       
+    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.6.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])   
+    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3-scenariomip/ScenarioMIP/rcmip_phase3_concentrations_ScenarioMIP_v1.1.6.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])   
+    #make_concentrations_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")       

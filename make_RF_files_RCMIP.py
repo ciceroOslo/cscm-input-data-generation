@@ -128,5 +128,6 @@ def print_full_data_dict(full_data_dict, years, fname_epithet = '', fout_dir = '
 if __name__ == "__main__":
     #full_data_dict, years = get_full_data_dict_from_file()
     #print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP', fout_dir = './')
-    full_data_dict, years = get_full_data_dict_from_file(filepath = '../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_forcing_v1.1.0.csv')
+    full_data_dict, years = get_full_data_dict_from_file(filepath = '../rcmip-phase-3-scenariomip/ScenarioMIP/rcmip_phase3_forcing_ScenarioMIP_v1.1.6.csv')
+    full_data_dict, years = get_full_data_dict_from_file(filepath = '../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_forcing_v1.1.6.csv')
     print_full_data_dict(full_data_dict, years, fname_epithet = '_RCMIP3', fout_dir = '/home/masan/temp/rcmip_inputs_cscm/')
