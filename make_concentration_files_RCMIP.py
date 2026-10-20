@@ -22,17 +22,17 @@ units = []
 # Start by getting the list of gas components and units
 # from the gases file:
 
-def make_concentrations_scenario_files(gaspam_file, rcmip_datafile, scenario_list = None):
+def make_concentrations_scenario_files(gaspam_file, rcmip_datafile, scenario_list = None, fout_dir = './'):
     print("Starting")
     components, units = initialise_comp_unit_dict(gaspam_file=gaspam_file, emissions=False)
     print("Done components and units")
     if scenario_list is None:
-        scenario_list = lift_scenariolist_from_datafile(rcmip_datafile)
+        scenario_list = lift_scenariolist_from_datafile(rcmip_datafile, use_short_names=True)
     print("Done finding scenarios_list")
     print(scenario_list)
     full_data_dict, years = read_concentrations_datafile(rcmip_datafile, components, units, scenario_list)
     print("Done getting data")
-    write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end=f"conc_{gaspam_file.split('/')[-1].split('.')[0]}.txt")
+    write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end=f"conc_{gaspam_file.split('/')[-1].split('.')[0]}.txt", fout_dir=fout_dir)
     print("Done writing to files")
 
 #print(components)
@@ -51,8 +51,8 @@ def get_start_values_from_piControl(df, components, picontrol = "piControl"):
         comp_in = content["Variable"].split("|")[-1]
         if comp_in in components:
             comp = comp_in
-        elif component_renaming(comp_in) in components:
-            comp = component_renaming(comp_in)
+        elif component_renaming(comp_in, comp_in) in components:
+            comp = component_renaming(comp_in, comp_in)
         else:
             #print(f"Found no match for {comp_in}")
             continue
@@ -80,9 +80,18 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
         datareader = csv.reader(csv_ssp_file, delimiter=',')
         for line in datareader:
             if readfirstline == 0:
-                years = np.array(line[7:], int)
-                readfirstline = 1
-            
+                years_begin = None
+                for idx, val in enumerate(line):
+                    try:
+                        if 1000 <= int(val) <= 9999:
+                            years_begin = idx
+                            break
+                    except ValueError:
+                        continue
+                if years_begin is None:
+                    years_begin = 7
+                years = np.array(line[years_begin:], int)
+                readfirstline = 1 
             #Skip the lines we are not interested in:
             if line[2] != "World":
                 continue
@@ -92,10 +101,11 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
             # line:
             s = line[1]
             c = line[3].split("|")[-1]
+            #print(line)  
             #print(line)
             if c not in components:
-                if component_renaming(c) in components:
-                    c = component_renaming(c)
+                if component_renaming(c, c) in components:
+                    c = component_renaming(c, c)
                 else:
                 
                     #print c
@@ -114,16 +124,16 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
             #Then make the whole thing a numpy array for easy
             # addition
             if s in scenarios_vanilla:
-                data = np.array(list(map(float,interpolate_data(line[7:]))))
+                data = np.array(list(map(float,interpolate_data(line[years_begin:]))))
             elif s in scenarios_extendconstant:
-                data = np.array(list(map(float,interpolate_data_wconstant_start(line[7:], startval=sval[c]))))
+                data = np.array(list(map(float,interpolate_data_wconstant_start(line[years_begin:], startval=sval[c]))))
                 #print(data)
                 #print(line[150])
                 #sys.exit(4)
             else:
                 #print(line[72])
                 #print(s)
-                data = np.array(list(map(float,interpolate_data_wconstant_start(line[7:],start=65))))
+                data = np.array(list(map(float,interpolate_data_wconstant_start(line[years_begin:],start=65))))
             #print(data)
             #sys.exit(4)
 
@@ -141,6 +151,13 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
                 full_data_dict[s][c] = data*conv_factor
             else:
                 full_data_dict[s][c] = full_data_dict[s][c] + conv_factor*data
+            #print(full_data_dict[s][c])
+            #sys.exit(4)
+            #print(s)
+            #print(c)
+            #sys.exit(4)
+    #print(full_data_dict)
+    #sys.exit(4)
     return full_data_dict, years
             
             #print "Success " + (',').join(line)
@@ -152,7 +169,7 @@ def read_concentrations_datafile(rcmip_datafile, components, units, scenario_lis
 
 ##Now printing the data to scenario files file:
 
-def write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end = "conc_RCMIP.txt",):
+def write_concentration_file_for_each_scenario(full_data_dict, components, units, years, fname_end = "conc_RCMIP.txt", fout_dir = './'):
     for s in full_data_dict.keys():
 
         """
@@ -167,9 +184,9 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
                     for i in range(len(components)):
                         data_from_rcp[s][components[i]].append(line[i+1])
         """           
-            
+        print(s)
     #    fname =  "%s_%s.%s_em_RCMIP.txt"%(s[0:4],s[5], s[6])
-        fname =  f"{s}_{fname_end}"
+        fname =  f"{fout_dir}{s}_{fname_end}"
         with open(fname, 'w') as f:
             f.write("Component\tCO2 \t %s \n"%("\t".join(str(c) for c in components[1:])))
             f.write("Unit \t %s\n"%("\t".join(str(u) for u in units)))
@@ -186,7 +203,10 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
                     continue
                 for c in components:
                     if len(full_data_dict[s][c])> 0:
+                        print(c)
                         line = line + "\t" + str(full_data_dict[s][c][i])
+                        #print(full_data_dict[s][c][i])
+                        #sys.exit(4)
                         #Noting in the reference line that there is
                         #data from the ssp
                         if i == 0:
@@ -201,7 +221,7 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
                         #taken from the rcp
                         if i == 0:
                             refline = refline + "\t" + "No data"
-
+                #print(line)
                 line = line + "\n"
                 lines.append(line)
                         
@@ -215,5 +235,7 @@ def write_concentration_file_for_each_scenario(full_data_dict, components, units
     
 if __name__ == "__main__":
 
-    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/rcmip-concentrations-annual-means-v3-1-0.csv")#, scenario_list=["abrupt-4xCO2"])         
-            
+    #make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "data/rcmip-concentrations-annual-means-v3-1-0.csv")#, scenario_list=["abrupt-4xCO2"])         
+    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.6.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])   
+    make_concentrations_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3-scenariomip/ScenarioMIP/rcmip_phase3_concentrations_ScenarioMIP_v1.1.6.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["abrupt-4xCO2"])   
+    #make_concentrations_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_concentrations_v1.1.0.csv", fout_dir = "/home/masan/temp/rcmip_inputs_cscm/")       

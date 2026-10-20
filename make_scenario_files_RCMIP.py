@@ -10,13 +10,16 @@ from misc_utils import unit_conv_factor, unit_name_converter, initialise_comp_un
 
 #component_dict = {"MAGICC AFOLU":"CO2_lu", "CFC113":"CFC-113", "CFC114":"CFC-114", "Sulfur":"SO2", "VOC":"NMVOC", "CFC11":"CFC-11", "CFC115":"CFC-115", "CFC12":"CFC-12", "HCFC141b":"HCFC-141b", "HCFC142b":"HCFC-142b", "HCFC22":"HCFC-22", "Halon1211":"H-1211", "Halon1301":"H-1301", "Halon2402":"H-2402","MAGICC Fossil and Industrial":"CO2"} # Halon1212, CH3Cl
 
-def make_emissions_scenario_files(gaspam_file, iamc_data_file, historical=None, scenario_list = None):
+def make_emissions_scenario_files(gaspam_file, iamc_data_file, scenario_list = None, fout_dir = './'):
     components, units = initialise_comp_unit_dict(gaspam_file=gaspam_file)
     if scenario_list is None:
-        scenario_list = lift_scenariolist_from_datafile(iamc_data_file)
+        scenario_list = lift_scenariolist_from_datafile(iamc_data_file, use_short_names=True)
+        #print(scenario_list)
+        #sys.exit(4)
     ## Initialising dictionary to hold the data:
     full_data_dict, data_from_rcp, years = read_line_by_line(components, units, scenario_list, iamc_data_file)
-    write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years, fname_end=f"em_{gaspam_file.split('/')[-1].split('.')[0]}.txt")
+    print("Finished reading data, now writing files...")
+    write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years, fname_end=f"em_{gaspam_file.split('/')[-1].split('.')[0]}.txt", fout_dir=fout_dir)
 
 def initialise_empty_dictionaries_wrcp(scenario_list, components):
     ## Initialising dictionary to hold the data:
@@ -25,7 +28,6 @@ def initialise_empty_dictionaries_wrcp(scenario_list, components):
     ## And extra dictionary to hold data from ssp-scenario:
     ## This is for components for which data is missing for the ssp
     data_from_rcp ={}
-    rcps = ["rcp60", "rcp26", "rcp85", "rcp45"]
 
     # Start by getting the list of gas components and units
     # from the gases file:
@@ -44,8 +46,8 @@ def initialise_empty_dictionaries_wrcp(scenario_list, components):
                 continue
             BC_hist.append(float(line[-4]))
             OC_hist.append(float(line[-3]))
-    print((BC_hist[:240]))
-    print((OC_hist[:240]))
+    #print((BC_hist[:240]))
+    #print((OC_hist[:240]))
     #sys.exit(4)
 
     for s in scenario_list:
@@ -83,7 +85,17 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
         datareader = csv.reader(csv_ssp_file, delimiter=',')
         for line in datareader:
             if readfirstline == 0:
-                years = line[7:]
+                years_begin = None
+                for idx, val in enumerate(line):
+                    try:
+                        if 1000 <= int(val) <= 9999:
+                            years_begin = idx
+                            break
+                    except ValueError:
+                        continue
+                if years_begin is None:
+                    years_begin = 7
+                years = line[years_begin:]
                 readfirstline = 1
             
             #Skip the lines we are not interested in:
@@ -98,26 +110,39 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
             if s not in scenario_list:
                     continue
             c = line[3].split("|")[-1]
+
             if c == "CO2":
                 continue
+            
+            if "CO2" in line[3]:
+                print(c)
+                print(line[3])
+                #sys.exit(4)
             if c not in components:
-                
-                if component_renaming(c) in components:
-                    c = component_renaming(c)
+                print("Component %s not in component list, trying to rename..."%c)
+                comp_total = line[3]
+                print(component_renaming(c, comp_total=comp_total))
+                if component_renaming(c, comp_total=comp_total) in components:
+                    c = component_renaming(c, comp_total=comp_total)
                     #print("%s %s: %s: %s"%(s, c, line[3], line[22]))
                     if c == "CO2_lu" and line[3].split("|")[-2] != "CO2":
-    #                    print(line[3])
+                        print("Not picking up CO2_lu component for %s %s"%(s, line[3]))
                         continue
                     if c == "CO2" and line[3].split("|")[-2] != "CO2":
+                        print("Not picking up CO2 component for %s %s"%(s, line[3]))
                         continue
-                elif line[3].split("|")[-3] in ["BC", "OC"] and len(c.split(" "))> 1 and c.split(" ")[1] == "Burning" :
-                    print(line[:7])
-                    c = "BMB_AEROS_%s"%line[3].split("|")[-3]
-                    
+                elif len(line[3].split("|")) > 2:
+                    if line[3].split("|")[-3] in ["BC", "OC"] and len(c.split(" "))> 1 and c.split(" ")[1] == "Burning" :
+                        #print(line[:7])
+                        c = "BMB_AEROS_%s"%line[3].split("|")[-3]
+                    else:
+                        print("Component %s not in component list, and can't be renamed, skipping..."%c)
+                        #sys.exit(4)
+                        continue
                 else:
                 
-                    #print(c)
-                    #sys.exit(4)
+                    # print(c)
+                    # sys.exit(4)
                     continue
             counter = counter +1
             sector = "total"
@@ -150,13 +175,14 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
                 if s[0:3] == "rcp":
                 #print(s)
                     
-                    data = np.array(list(map(float,interpolate_data_wconstant_start(line[7:],start=15))))
+                    data = np.array(list(map(float,interpolate_data_wconstant_start(line[years_begin:],start=15))))
                 else:
-                    data = np.array(list(map(float,interpolate_data(line[7:]))))
+                    data = np.array(list(map(float,interpolate_data(line[years_begin:]))))
             except:
                 print(s)
-                print(line[7:])
+                print(line[years_begin:])
                 data = np.zeros(len(years))
+                print("interpolation failed for %s %s"%(s,c))
                 sys.exit(4)
             #print(data)
             #sys.exit(4)
@@ -189,22 +215,37 @@ def read_line_by_line(components, units, scenario_list, iamc_data_file):
                     print(len(full_data_dict[s][c]))
                     full_data_dict[s]['BMB_AEROS_BC'] = data_conv - full_data_dict[s][c]
                 else:
-                    print(data*conv_factor)
+                    #print(data*conv_factor)
                     full_data_dict[s][c] = data*conv_factor
             else:
+                # This should be happening only for BC and OC components
+                # print(full_data_dict[s][c])
+                # print(data*conv_factor)
+                print(s)
+                print(components)
                 print("Shouldn't really be here... Adding to initialised component with %s and %s"%(s,c))
                 full_data_dict[s][c] = full_data_dict[s][c] + conv_factor*data    
-                #sys.exit(4)
+                sys.exit(4)
             #Subtracting forest and grassland burning components 
             #from OC and BC:
 
-
             if (c == 'BMB_AEROS_BC' or c =='BMB_AEROS_OC'):
+                print("Subtracting BMB_AEROS from total")
                 total_comp = '%s'%c[-2:]
                 full_data_dict[s][total_comp] = full_data_dict[s][total_comp] - data*conv_factor
+            # if "CO2" in line[3]:
+            #     print(s)
+            #     print(c)
+            #     print(line[3])
+            #     print(data)
+            #     print(conv_factor)
+            #     print(full_data_dict[s][c])
+                # if c == "CO2_lu":
+                #     sys.exit(4)
+    print("Finished reading data, returning")
     return full_data_dict, data_from_rcp, years
 
-def write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years, fname_end = "em_RCMIP.txt"):
+def write_file_for_each_scenario(full_data_dict, scenario_list, units, components, years, fname_end = "em_RCMIP.txt", fout_dir = './'):
     for s in scenario_list:
         """
         if s in ssp_rcp_dict:
@@ -222,7 +263,8 @@ def write_file_for_each_scenario(full_data_dict, scenario_list, units, component
         """        
         #    fname =  "%s_%s.%s_em_RCMIP.txt"%(s[0:4],s[5], s[6])
         #fname =  "%smethane_em_RCMIP.txt"%(s)
-        fname =  f"{s}_{fname_end}"
+        print(s)
+        fname =  f"{fout_dir}{s}_{fname_end}"
         with open(fname, 'w') as f:
             f.write("Component \t CO2 \t CO2 \t %s \n"%("\t".join(str(c) for c in components[2:])))
             f.write("Unit \t %s\n"%("\t".join(str(u) for u in units)))
@@ -231,14 +273,14 @@ def write_file_for_each_scenario(full_data_dict, scenario_list, units, component
             lines = []
             #Finding each of the lines to print for each year:
             # And what to write on the reference line (ssp or rcp)
-            print(full_data_dict.keys())
-            for keys, dicts in full_data_dict.items():
-                print(dicts.keys())
+            # print(full_data_dict.keys())
+            # for keys, dicts in full_data_dict.items():
+            #     print(dicts.keys())
             #sys.exit(4)
             for i in range(len(years)):
                 line = years[i] 
                 for c in components:
-                    print(c)
+                    #print(c)
                     if len(full_data_dict[s][c])> 0 and ( c not in ["BC", "OC"]):
                         line = "%s \t %.8f"%(line, full_data_dict[s][c][i])
                         #Noting in the reference line that there is
@@ -324,7 +366,11 @@ if __name__ == "__main__":
     #scenario_list = ["historical", "ssp370", "ssp370-lowNTCF", "ssp434", "ssp460", "ssp119", "ssp126", "ssp245", "ssp534-over", "ssp585","esm-bell-1000PgC", "esm-bell-2000PgC", "esm-bell-750PgC", "esm-pi-CO2pulse",  "esm-pi-cdr-pulse", "esm-piControl", "historical_cmip5"]
     scenario_list = ["ssp245", "rcp60"]
     #make_emissions_scenario_files("../ciceroscm/tests/test-data/gases_v1RCMIP.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
-    make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv")#, scenario_list=scenario_list)
+    #make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "data/rcmip-emissions-annual-means-v3-1-0.csv", scenario_list=scenario_list)
+    #make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.0.0.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/RCMIP3_input_datafiles/rcmip_phase3_emissions_v1.1.6.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
+    make_emissions_scenario_files("data/gases_vupdate_2022_AR6.txt", "../rcmip-phase-3/ScenarioMIP/rcmip_phase3_emissions_ScenarioMIP_v1.1.6.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")#, scenario_list=["historical"])
+    make_emissions_scenario_files("data/gases_vupdate_2024_WMO_added_new.txt", "../rcmip-phase-3/ScenarioMIP/rcmip_phase3_emissions_ScenarioMIP_v1.1.6.csv", fout_dir="/home/masan/temp/rcmip_inputs_cscm/")
     #ssp_rcp_dict = {"rcp60":"rcp_6.0.txt","rcp85":"rcp_8.5.txt","rcp45":"rcp_4.5.txt"}#"esm-pi-CO2pulse":"rcp_6.0.txt", "esm-pi-cdr-pulse":"rcp_6.0.txt","esm-piControl":"rcp_4.5.txt", "historical-cmip5":"rcp_6.0.txt"}
     #NBNB!! Check mappings for last four
 

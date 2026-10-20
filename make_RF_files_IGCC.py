@@ -21,7 +21,7 @@ comp_dict ={"Solar":"solar_RCMIP", "Volcanic":"VOLC_RCMIP", "Albedo Change":"LUC
 years = []
 
 
-def make_forcing_files(data_file, end_name="IGCC", components = None, scenario_list = None):
+def make_forcing_files(data_file, end_name="_IGCC", fout_dir = "./", components = None, scenario_list = None):
     if components is None:
         components = ["Solar", "Volcanic", "Albedo Change"]
     if scenario_list is None:
@@ -31,7 +31,7 @@ def make_forcing_files(data_file, end_name="IGCC", components = None, scenario_l
     print(components)
     print(full_data_dict.keys())
     full_data_dict, years = get_forcing_data_from_file(data_file, full_data_dict)
-    write_out_cscm_forcing_files(full_data_dict, years)
+    write_out_cscm_forcing_files(full_data_dict, years, end_name=end_name, fout_dir=fout_dir)
 
 
 def get_forcing_data_from_file(data_file, full_data_dict):
@@ -56,11 +56,11 @@ def get_forcing_data_from_file(data_file, full_data_dict):
 
 
 ##Now printing the data to scenario files file:
-def write_out_cscm_forcing_files(full_data_dict, years):
+def write_out_cscm_forcing_files(full_data_dict, years, end_name = "_IGCC", fout_dir = './'):
     for s in full_data_dict.keys():
 
         for c in full_data_dict[s].keys():
-            fname =  "%s_%s.txt"%(comp_dict[c],s)
+            fname =  f"{fout_dir}{comp_dict[c]}_{s}{end_name}.txt"
             with open(fname, 'w') as f:
                 if len(full_data_dict[s][c])<1:
                     print("Scenario: %s Compontent: %s"%(s,c))
@@ -82,4 +82,4 @@ def write_out_cscm_forcing_files(full_data_dict, years):
     
             
 if __name__ == "__main__":
-    make_forcing_files("data/ERF_best_1750-2024.csv")            
+    make_forcing_files("data/ERF_best_1750-2024.csv", fout_dir = '/home/masan/temp/rcmip_inputs_cscm/', end_name="_IGCC")            
