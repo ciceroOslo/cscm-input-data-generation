@@ -1,0 +1,23 @@
+[workspace]
+name = "cscm-input-data-generation"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = "3.12.*"
+numpy = "*"
+pandas = ">=2.2,<3"
+pyarrow = "*"
+pandas-indexing = ">=0.5.2"
+tqdm = "*"
+scipy = "*"
+matplotlib = "*"
+
+[pypi-dependencies]
+silicone = ">=1.3,<2"
+pyam-iamc = ">=3"
+gcages = ">=0.14"
+
+[tasks]
+download-infilling-db = "python infilling_data.py"
+make-iamc = "python make_scenario_files_IAMC.py"

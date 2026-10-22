@@ -172,7 +172,7 @@ def glue_scenario_to_historical(data_dict, data_dict_historical, years, years_hi
         for comp in data_dict[scen].keys():
             print(data_dict_historical["historical"][comp][:hist_end_index])
             print(data_dict[scen][comp])
-            if np.all(data_dict[scen][comp] == 0) and infill_inverse_zero:
+            if np.all(data_dict[scen][comp] == 0) and infill_inverse_zero and comp != "CO2_lu":
                 data_dict[scen][comp] = np.concatenate((np.zeros(len(data_dict_historical["historical"][comp][:hist_end_index])), data_dict[scen][comp]))
             else:
                 data_dict[scen][comp] = np.concatenate((data_dict_historical["historical"][comp][:hist_end_index], data_dict[scen][comp]))
